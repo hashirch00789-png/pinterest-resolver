@@ -480,12 +480,18 @@ def rate_limit(request: Request):
 
 app = FastAPI(title=APP_NAME, version=VERSION)
 
+# Browser frontend connection:
+# The downloader is a public, unauthenticated tool, so v1.1 deliberately
+# allows cross-origin requests from any HTTPS/HTTP origin. This removes the
+# Pantheon -> Render CORS failure that can otherwise appear as "Failed to fetch".
+# Once the site is stable, this can be restricted to the production domain.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
+    allow_origins=["*"],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
+    max_age=86400,
 )
 
 
@@ -503,6 +509,16 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "ok", "version": VERSION}
+
+@app.get("/api/cors-test")
+async def cors_test():
+    return {
+        "success": True,
+        "status": "ok",
+        "cors": "enabled",
+        "version": VERSION,
+        "message": "Browser requests to this public API are allowed."
+    }
 
 
 @app.post("/api/resolve")
