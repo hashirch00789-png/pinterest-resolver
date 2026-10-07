@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: pinterest-media-resolver
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: CORS_ORIGINS
+        value: https://dev-pinterest-video-download.pantheonsite.io

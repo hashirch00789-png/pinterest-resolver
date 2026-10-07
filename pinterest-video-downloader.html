@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pinterest Video Downloader</title>
+<style>
+  :root{--red:#e60023;--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--soft:#f7f8fa}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,Arial,sans-serif;background:#fff;color:var(--ink)}
+  .wrap{max-width:900px;margin:40px auto;padding:0 18px}
+  .box{border:1px solid #eadde0;border-radius:24px;padding:22px;box-shadow:0 12px 35px rgba(30,20,25,.06)}
+  .row{display:flex;gap:10px}
+  input{flex:1;height:58px;border:1px solid #cfd5dd;border-radius:10px;padding:0 16px;font-size:16px;outline:none}
+  input:focus{border-color:#9ca3af}
+  button{height:58px;border:0;border-radius:14px;padding:0 28px;font-size:16px;font-weight:700;cursor:pointer}
+  .paste{background:#f0f1f3;color:#fff}
+  .download{background:var(--red);color:#fff}
+  .download:disabled{opacity:.55;cursor:not-allowed}
+  .status{margin-top:14px;padding:14px;border-radius:10px;background:#eefaf5;color:#06755f;font-size:14px}
+  .status.err{background:#fff1f2;color:#b42318}
+  .result-head{display:flex;justify-content:space-between;align-items:center;margin:25px 0 14px}
+  .result-head h2{font-size:19px;margin:0}
+  .count{font-size:13px;color:var(--muted)}
+  .card{max-width:520px;border:1px solid #dedfe3;border-radius:18px;overflow:hidden;background:#fff}
+  .preview{background:#111;display:flex;align-items:center;justify-content:center;min-height:260px}
+  .preview video{display:block;width:100%;max-height:650px;object-fit:contain;background:#111}
+  .preview img{display:block;width:100%;max-height:650px;object-fit:contain}
+  .body{padding:16px}
+  .title{font-weight:700;margin-bottom:12px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}
+  .chip{font-size:12px;background:#f2f2f4;padding:6px 9px;border-radius:7px}
+  .card a.dl{display:flex;align-items:center;justify-content:center;height:44px;background:var(--red);color:#fff;text-decoration:none;border-radius:10px;font-weight:700}
+  .note{margin-top:14px;font-size:12px;color:#6b7280;line-height:1.5}
+  .hidden{display:none}
+  @media(max-width:680px){.row{flex-direction:column}.row button{width:100%}.wrap{margin:18px auto}.box{padding:14px;border-radius:18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="box">
+    <div class="row">
+      <input id="pinUrl" type="url" placeholder="Paste Pinterest link here" autocomplete="off">
+      <button id="pasteBtn" class="paste" type="button">Paste</button>
+      <button id="goBtn" class="download" type="button">Download</button>
+    </div>
+
+    <div id="status" class="status hidden"></div>
+
+    <div id="results" class="hidden">
+      <div class="result-head">
+        <h2>Pinterest Media Found</h2>
+        <span id="count" class="count"></span>
+      </div>
+      <div id="cards"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const input = $('pinUrl'), go = $('goBtn'), paste = $('pasteBtn');
+  const status = $('status'), results = $('results'), cards = $('cards'), count = $('count');
+
+  // IMPORTANT:
+  // A browser cannot reliably scrape Pinterest directly because of CORS and
+  // Pinterest's server-side rendering/anti-bot behavior. Therefore this HTML
+  // talks to public resolver services instead of pretending an image poster
+  // is an MP4.
+  const RESOLVERS = [
+    {
+      name: 'Preniv',
+      method: 'GET',
+      build: u => 'https://prenivapi.vercel.app/api/pinterest?url=' + encodeURIComponent(u)
+    },
+    {
+      name: 'Pin Resolver',
+      method: 'POST',
+      build: u => 'https://pin.vinayop.cloud/pin',
+      body: u => JSON.stringify({url:u})
+    }
+  ];
+
+  function setStatus(msg, err=false){
+    status.textContent = msg;
+    status.classList.remove('hidden','err');
+    if(err) status.classList.add('err');
+  }
+
+  function clearStatus(){ status.classList.add('hidden'); }
+
+  function validPinterest(u){
+    try{
+      const x = new URL(u);
+      return /(^|\.)pin\.it$|(^|\.)pinterest\.[a-z.]+$/i.test(x.hostname);
+    }catch(e){ return false; }
+  }
+
+  function first(obj, keys){
+    for(const k of keys){
+      if(obj && obj[k] != null) return obj[k];
+    }
+    return null;
+  }
+
+  function flattenMedia(data){
+    // Normalize several common Pinterest resolver response shapes.
+    const out = [];
+
+    const push = (x, inheritedType='') => {
+      if(!x || typeof x !== 'object') return;
+
+      const type = String(first(x,['type','media_type','mediaType','kind']) || inheritedType).toLowerCase();
+      const url = first(x,['url','download_url','downloadUrl','video_url','videoUrl','src','media_url','mediaUrl']);
+      const thumb = first(x,['thumbnail','thumbnail_url','thumbnailUrl','poster','poster_url','image','image_url','imageUrl']);
+      const title = first(x,['title','name']) || 'Pinterest Media';
+      const quality = first(x,['quality','format','label','resolution']) || '';
+
+      if(url && typeof url === 'string'){
+        const lower=url.toLowerCase();
+        const isVideo = type.includes('video') || /\.mp4(\?|$)/i.test(lower) || /v\d?\.pinimg\.com\/videos/i.test(lower);
+        const isImage = type.includes('image') || /\.(jpe?g|png|webp|gif)(\?|$)/i.test(lower);
+        if(isVideo || isImage){
+          out.push({url,type:isVideo?'video':'image',thumb:thumb||'',title,quality});
+        }
+      }
+
+      for(const k of ['items','media','results','data','formats','videos','video_formats','videoFormats']){
+        const v=x[k];
+        if(Array.isArray(v)) v.forEach(i=>push(i, type));
+        else if(v && typeof v==='object') push(v,type);
+      }
+    };
+
+    push(data, String(data?.type||data?.media_type||''));
+
+    // Some APIs put the useful result under data.result / data.results / item / pin.
+    for(const k of ['result','item','pin','media','data','results']){
+      const v=data?.[k];
+      if(Array.isArray(v)) v.forEach(i=>push(i,''));
+      else if(v && typeof v==='object') push(v,'');
+    }
+
+    // Deduplicate and prefer video.
+    const seen = new Set(), clean=[];
+    for(const m of out){
+      if(seen.has(m.url)) continue;
+      seen.add(m.url);
+      clean.push(m);
+    }
+    clean.sort((a,b)=>(b.type==='video')-(a.type==='video'));
+    return clean;
+  }
+
+  async function callResolver(r, url){
+    const opts = {
+      method:r.method,
+      headers:{'Accept':'application/json'}
+    };
+    if(r.method==='POST'){
+      opts.headers['Content-Type']='application/json';
+      opts.body=r.body(url);
+    }
+    const res=await fetch(r.build(url),opts);
+    const text=await res.text();
+    let data;
+    try{ data=JSON.parse(text); }
+    catch(e){ throw new Error(r.name+' returned a non-JSON response'); }
+    if(!res.ok) throw new Error(data?.message || data?.error?.message || r.name+' HTTP '+res.status);
+    return data;
+  }
+
+  function render(items){
+    cards.innerHTML='';
+    const videos=items.filter(x=>x.type==='video');
+    const images=items.filter(x=>x.type==='image');
+
+    // If a real video exists, NEVER render its poster as a downloadable image.
+    const finalItems = videos.length ? videos : images.slice(0,5);
+
+    count.textContent = finalItems.length + (finalItems.length===1?' available option':' available options');
+
+    finalItems.forEach((m,i)=>{
+      const card=document.createElement('div');
+      card.className='card';
+
+      const preview=document.createElement('div');
+      preview.className='preview';
+
+      if(m.type==='video'){
+        const v=document.createElement('video');
+        v.controls=true; v.playsInline=true; v.preload='metadata';
+        if(m.thumb) v.poster=m.thumb;
+        const source=document.createElement('source');
+        source.src=m.url; source.type='video/mp4';
+        v.appendChild(source);
+        preview.appendChild(v);
+      }else{
+        const img=document.createElement('img');
+        img.src=m.url; img.alt=m.title;
+        img.loading='lazy';
+        preview.appendChild(img);
+      }
+
+      const body=document.createElement('div'); body.className='body';
+      const title=document.createElement('div'); title.className='title'; title.textContent=m.title;
+
+      const chips=document.createElement('div'); chips.className='chips';
+      const c1=document.createElement('span'); c1.className='chip'; c1.textContent=m.type==='video'?'MP4':'JPG';
+      chips.appendChild(c1);
+      if(m.quality){const c2=document.createElement('span');c2.className='chip';c2.textContent=m.quality;chips.appendChild(c2);}
+
+      const a=document.createElement('a');
+      a.className='dl';
+      a.href=m.url;
+      a.target='_blank';
+      a.rel='noopener';
+      a.download='';
+      a.textContent=m.type==='video'?'Download MP4':'Download Image';
+
+      body.append(title,chips,a);
+      card.append(preview,body);
+      cards.appendChild(card);
+    });
+
+    results.classList.remove('hidden');
+
+    if(videos.length) setStatus('Pinterest video found. The poster image is used only as a thumbnail.');
+    else setStatus('No public MP4 was returned by the resolver. This Pin may be an image, private/restricted, or Pinterest may not expose a downloadable video file.', true);
+  }
+
+  async function run(){
+    const url=input.value.trim();
+    if(!validPinterest(url)){
+      setStatus('Please enter a valid public Pinterest or pin.it URL.',true);
+      return;
+    }
+
+    go.disabled=true;
+    results.classList.add('hidden');
+    cards.innerHTML='';
+    setStatus('Resolving the Pinterest Pin…');
+
+    let all=[];
+    let errors=[];
+
+    for(const r of RESOLVERS){
+      try{
+        const data=await callResolver(r,url);
+        const media=flattenMedia(data);
+        if(media.length){
+          all=media;
+          break;
+        }
+        errors.push(r.name+' returned no media');
+      }catch(e){
+        errors.push(e.message);
+      }
+    }
+
+    if(all.length){
+      render(all);
+    }else{
+      setStatus('Could not resolve a downloadable public media file. '+errors.join(' | '),true);
+    }
+    go.disabled=false;
+  }
+
+  paste.addEventListener('click',async()=>{
+    try{
+      input.value=await navigator.clipboard.readText();
+      input.focus();
+    }catch(e){
+      input.focus();
+      setStatus('Clipboard permission was blocked. Paste the link manually.',true);
+    }
+  });
+
+  go.addEventListener('click',run);
+  input.addEventListener('keydown',e=>{if(e.key==='Enter')run();});
+})();
+</script>
+</body>
+</html>
