@@ -1,285 +1,175 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pinterest Video Downloader</title>
+<!-- Elementor-ready Pinterest Video Downloader. Replace API_ENDPOINT with your server endpoint. -->
+<div id="pvd">
 <style>
-  :root{--red:#e60023;--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--soft:#f7f8fa}
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,Arial,sans-serif;background:#fff;color:var(--ink)}
-  .wrap{max-width:900px;margin:40px auto;padding:0 18px}
-  .box{border:1px solid #eadde0;border-radius:24px;padding:22px;box-shadow:0 12px 35px rgba(30,20,25,.06)}
-  .row{display:flex;gap:10px}
-  input{flex:1;height:58px;border:1px solid #cfd5dd;border-radius:10px;padding:0 16px;font-size:16px;outline:none}
-  input:focus{border-color:#9ca3af}
-  button{height:58px;border:0;border-radius:14px;padding:0 28px;font-size:16px;font-weight:700;cursor:pointer}
-  .paste{background:#f0f1f3;color:#fff}
-  .download{background:var(--red);color:#fff}
-  .download:disabled{opacity:.55;cursor:not-allowed}
-  .status{margin-top:14px;padding:14px;border-radius:10px;background:#eefaf5;color:#06755f;font-size:14px}
-  .status.err{background:#fff1f2;color:#b42318}
-  .result-head{display:flex;justify-content:space-between;align-items:center;margin:25px 0 14px}
-  .result-head h2{font-size:19px;margin:0}
-  .count{font-size:13px;color:var(--muted)}
-  .card{max-width:520px;border:1px solid #dedfe3;border-radius:18px;overflow:hidden;background:#fff}
-  .preview{background:#111;display:flex;align-items:center;justify-content:center;min-height:260px}
-  .preview video{display:block;width:100%;max-height:650px;object-fit:contain;background:#111}
-  .preview img{display:block;width:100%;max-height:650px;object-fit:contain}
-  .body{padding:16px}
-  .title{font-weight:700;margin-bottom:12px}
-  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}
-  .chip{font-size:12px;background:#f2f2f4;padding:6px 9px;border-radius:7px}
-  .card a.dl{display:flex;align-items:center;justify-content:center;height:44px;background:var(--red);color:#fff;text-decoration:none;border-radius:10px;font-weight:700}
-  .note{margin-top:14px;font-size:12px;color:#6b7280;line-height:1.5}
-  .hidden{display:none}
-  @media(max-width:680px){.row{flex-direction:column}.row button{width:100%}.wrap{margin:18px auto}.box{padding:14px;border-radius:18px}}
+#pvd{--r:#e60023;--rd:#b9001d;--ink:#17171a;--mut:#666871;--bd:#eadfe2;--bg:#fff7f8;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+#pvd *{box-sizing:border-box}#pvd a{color:inherit}.pvdc{width:min(1120px,calc(100% - 32px));margin:auto}
+.pvdnav{height:72px;background:#fff;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.pvdlogo{font-weight:850;font-size:21px;text-decoration:none}.pvdlogo span{color:var(--r)}.pvdlinks{display:flex;gap:24px}.pvdlinks a{font-size:14px;font-weight:700;text-decoration:none}
+.pvdhero{text-align:center;padding:72px 0 48px;background:linear-gradient(#fff,#fff7f8)}.eyebrow{display:inline-block;background:#ffe5e9;color:#b0001b;border:1px solid #ffd0d7;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
+h1{font-size:clamp(38px,5vw,62px);line-height:1.06;letter-spacing:-2.5px;margin:18px auto 14px;max-width:850px}h1 span{color:var(--r)}
+.lead{font-size:18px;color:var(--mut);max-width:780px;margin:0 auto 30px}
+.tool{background:#fff;border:1px solid var(--bd);border-radius:24px;padding:22px;box-shadow:0 18px 50px #21141817;max-width:920px;margin:auto;text-align:left}
+.row{display:flex;gap:10px}.iw{position:relative;flex:1}.input{width:100%;height:58px;border:1px solid #dcd4d7;border-radius:14px;padding:0 100px 0 17px;font-size:15px;outline:0}.input:focus{border-color:var(--r);box-shadow:0 0 0 4px #e6002317}.paste{position:absolute;right:7px;top:7px;height:44px;border:0;border-radius:10px;background:#f4eef0;padding:0 15px;font-weight:750;cursor:pointer}.download{height:58px;border:0;border-radius:14px;padding:0 28px;background:var(--r);color:#fff;font-weight:800;cursor:pointer}.download:hover{background:var(--rd)}
+.status{display:none;margin-top:12px;padding:11px 13px;border-radius:10px;font-size:14px}.status.show{display:block}.error{background:#fff0f1;color:#a40019}.info{background:#f4f6f8;color:#50545c}.success{background:#edf9f3;color:#12643f}
+.trust{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:18px}.trust span{font-size:12px;font-weight:700;background:#fff;border:1px solid var(--bd);padding:6px 11px;border-radius:999px}
+.result{display:none;margin-top:20px;border-top:1px solid var(--bd);padding-top:20px}.result.show{display:block}.rhead{display:flex;justify-content:space-between;gap:10px}.rhead h3{margin:0}.rhead span{font-size:12px;color:var(--mut)}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}.media{border:1px solid var(--bd);border-radius:16px;overflow:hidden}.preview{aspect-ratio:16/10;background:#f2eeee;display:flex;align-items:center;justify-content:center;overflow:hidden}.preview img,.preview video{width:100%;height:100%;object-fit:cover}.mi{padding:14px}.mi strong{display:block;margin-bottom:8px}.meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}.meta span{font-size:11px;background:#f6f1f2;padding:4px 8px;border-radius:7px}.dl{display:block;text-align:center;text-decoration:none;background:var(--r);color:#fff!important;border-radius:10px;padding:9px;font-size:12px;font-weight:800}
+section{padding:64px 0}section.white{background:#fff}.kicker{color:var(--r);font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}h2{font-size:clamp(28px,3.4vw,40px);line-height:1.15;letter-spacing:-1px;margin:0 0 14px}h3{font-size:19px;line-height:1.3;margin:0 0 7px}p{color:#555860;max-width:860px}.intro{font-size:16px;max-width:790px}
+.cards,.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}.card,.step,.device{background:#fff;border:1px solid var(--bd);border-radius:18px;padding:21px}.icon{width:40px;height:40px;border-radius:12px;background:#ffe7eb;color:#b5001d;display:flex;align-items:center;justify-content:center;font-weight:900;margin-bottom:13px}.card p,.step p{font-size:14px;margin:0}.stepnum{width:34px;height:34px;border-radius:10px;background:#ffe4e8;color:#b4001d;display:flex;align-items:center;justify-content:center;font-weight:900;margin-bottom:12px}
+.devices{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:25px}.device strong{display:block}.device span{font-size:13px;color:var(--mut)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:30px}.faq{border-top:1px solid var(--bd)}details{border-bottom:1px solid var(--bd)}summary{cursor:pointer;list-style:none;padding:19px 4px;font-weight:800}summary::-webkit-details-marker{display:none}details p{padding:0 4px 19px;margin:0;font-size:14px}
+.disc{background:#fff8e9;border:1px solid #f0dfb5;border-radius:16px;padding:19px}.disc p{margin:0;color:#685c3f;font-size:13px}
+footer{background:#17171a;color:#aaa;padding:48px 0 24px}.fg{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:35px}footer h3{color:#fff;font-size:15px}footer a{display:block;text-decoration:none;color:#aaa;font-size:13px;margin:7px 0}.copy{border-top:1px solid #303035;margin-top:28px;padding-top:16px;font-size:12px}
+.sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:760px){.pvdlinks{display:none}.row,.two{display:grid;grid-template-columns:1fr}.download{width:100%}.cards,.steps,.grid{grid-template-columns:1fr}.devices{grid-template-columns:1fr}h1{font-size:40px}.pvdhero{padding-top:50px}.tool{padding:14px}.fg{grid-template-columns:1fr}}
 </style>
-</head>
-<body>
-<div class="wrap">
-  <div class="box">
-    <div class="row">
-      <input id="pinUrl" type="url" placeholder="Paste Pinterest link here" autocomplete="off">
-      <button id="pasteBtn" class="paste" type="button">Paste</button>
-      <button id="goBtn" class="download" type="button">Download</button>
-    </div>
 
-    <div id="status" class="status hidden"></div>
+<header><div class="pvdc pvdnav"><a class="pvdlogo" href="/">Online<span>Font</span>Generate</a><nav class="pvdlinks"><a href="/pinterest-video-downloader/">Pinterest Downloader</a><a href="/pinterest-image-downloader/">Image Downloader</a><a href="/pinterest-gif-downloader/">GIF Downloader</a><a href="/about/">About</a><a href="/contact/">Contact</a></nav></div></header>
 
-    <div id="results" class="hidden">
-      <div class="result-head">
-        <h2>Pinterest Media Found</h2>
-        <span id="count" class="count"></span>
-      </div>
-      <div id="cards"></div>
-    </div>
-  </div>
+<main>
+<section class="pvdhero"><div class="pvdc">
+<div class="eyebrow">Free online Pinterest tool</div>
+<h1>Pinterest Video <span>Downloader</span></h1>
+<p class="lead">Download Pinterest videos, images, and GIFs online. Paste a public Pinterest Pin link and find the available media for your device.</p>
+<div class="tool">
+<form id="pvd-form"><label class="sr" for="pvd-url">Pinterest video URL</label><div class="row"><div class="iw"><input id="pvd-url" class="input" type="url" inputmode="url" placeholder="Paste Pinterest link here" required><button class="paste" type="button" id="paste">Paste</button></div><button class="download" id="submit" type="submit">Download</button></div></form>
+<div id="status" class="status" role="status" aria-live="polite"></div><div id="result" class="result"></div>
 </div>
+<div class="trust"><span>Free to Use</span><span>No Account Required</span><span>Mobile &amp; Desktop</span><span>Public Pins</span><span>Fast Processing</span></div>
+</div></section>
+
+<section class="white"><div class="pvdc"><div class="kicker">Pinterest video download</div><h2>Download Pinterest Videos Online</h2>
+<p class="intro">Our Pinterest Video Downloader is designed to make saving media from public Pinterest Pins simple. Copy a Pinterest video link, paste the Pinterest URL into the tool above, and process the Pin to see available downloadable media. Depending on the source, the result may include video, image, GIF, thumbnail, or other supported media.</p>
+<p>You can use the browser-based Pinterest downloader on Android, iPhone, iPad, Windows PC, Mac, Chromebook, and other modern devices. No dedicated downloader application is required for the web version.</p></div></section>
+
+<section><div class="pvdc"><div class="kicker">Simple process</div><h2>How to Download Videos From Pinterest</h2><p class="intro">Follow these steps to download a supported Pinterest video from a public Pin.</p>
+<div class="steps"><article class="step"><div class="stepnum">1</div><h3>Copy the Pinterest link</h3><p>Open Pinterest, find the Pin containing the video, choose Share, and copy its link.</p></article><article class="step"><div class="stepnum">2</div><h3>Paste the Pin URL</h3><p>Paste the Pinterest URL into the downloader. The tool uses the link to identify available public media.</p></article><article class="step"><div class="stepnum">3</div><h3>Download the media</h3><p>Review the available result, select the desired format or quality when provided, and save the file.</p></article></div></div></section>
+
+<section class="white"><div class="pvdc"><div class="kicker">Formats &amp; media</div><h2>Download Pinterest Videos as MP4</h2><p>Looking for a Pinterest to MP4 downloader? When an MP4 video source is available, this tool can present it as a downloadable option. MP4 is widely supported across phones, tablets, computers, media players, and editing applications.</p><p>Available resolution depends on the source media. If a Pin provides multiple versions, the result interface can display the available quality options. The tool should never claim a higher resolution than the source actually provides.</p>
+<div class="cards"><a class="card" href="/pinterest-video-to-mp4/"><div class="icon">MP4</div><h3>Pinterest Video to MP4</h3><p>Save supported Pinterest videos in MP4 format.</p></a><a class="card" href="/pinterest-image-downloader/"><div class="icon">IMG</div><h3>Pinterest Image Downloader</h3><p>Download supported Pinterest photos and images.</p></a><a class="card" href="/pinterest-gif-downloader/"><div class="icon">GIF</div><h3>Pinterest GIF Downloader</h3><p>Find supported animated media and GIF downloads.</p></a></div></div></section>
+
+<section><div class="pvdc"><div class="kicker">More than video</div><h2>Download Pinterest Images and GIFs</h2><p>Pinterest Pins can contain more than video. Depending on the Pin, our media downloader can identify supported photos, images, GIFs, thumbnails, or other media. If your goal is specifically to save a Pinterest picture, use the dedicated image downloader for a focused experience.</p>
+<div class="cards"><article class="card"><div class="icon">01</div><h3>Pinterest Image Downloader</h3><p>Save supported Pinterest images and photos from public Pin URLs.</p></article><article class="card"><div class="icon">02</div><h3>Pinterest GIF Downloader</h3><p>Process public Pins containing supported animated GIF media.</p></article><article class="card"><div class="icon">03</div><h3>Pinterest Pin Downloader</h3><p>Paste a Pin URL and identify the media available from it.</p></article></div></div></section>
+
+<section class="white"><div class="pvdc"><div class="kicker">Any device</div><h2>Pinterest Video Downloader for iPhone, Android, PC &amp; Mac</h2><p class="intro">Because the downloader runs in a web browser, you can use it on many common devices without installing a dedicated Pinterest video downloader app.</p>
+<div class="devices"><div class="device"><strong>iPhone &amp; iPad</strong><span>Copy the Pin link from Pinterest and paste it into the downloader using Safari or another supported browser.</span></div><div class="device"><strong>Android</strong><span>Copy the public Pinterest URL and use Chrome or another modern Android browser.</span></div><div class="device"><strong>Windows PC</strong><span>Use Chrome, Edge, Firefox, or another supported browser to process the Pinterest link.</span></div><div class="device"><strong>Mac</strong><span>Open the downloader in Safari, Chrome, or another modern browser and paste the Pin URL.</span></div><div class="device"><strong>Chromebook</strong><span>Use the browser-based tool without installing a dedicated desktop application.</span></div><div class="device"><strong>Mobile browsers</strong><span>The responsive interface is designed for touch screens as well as desktop use.</span></div></div></div></section>
+
+<section><div class="pvdc"><div class="kicker">Built for the task</div><h2>Why Use Our Pinterest Downloader?</h2><div class="cards"><article class="card"><div class="icon">01</div><h3>Fast and simple</h3><p>Paste a Pinterest link and start the download process without unnecessary steps.</p></article><article class="card"><div class="icon">02</div><h3>No account required</h3><p>The browser tool is designed for quick use without creating an account.</p></article><article class="card"><div class="icon">03</div><h3>Mobile and desktop</h3><p>Use the downloader from phones, tablets, laptops, desktops, and compatible browsers.</p></article><article class="card"><div class="icon">04</div><h3>Preview-ready results</h3><p>The frontend supports media previews and individual download choices returned by the backend.</p></article><article class="card"><div class="icon">05</div><h3>Quality-aware</h3><p>Available video quality can be shown dynamically instead of inventing unsupported resolutions.</p></article><article class="card"><div class="icon">06</div><h3>Multiple media types</h3><p>The result interface can display video, image, GIF, thumbnail, and other supported media returned by the API.</p></article></div></div></section>
+
+<section class="white"><div class="pvdc two"><div><div class="kicker">Public Pins</div><h2>What Pinterest Links Can I Download?</h2><p>This service is intended for publicly accessible Pinterest URLs. Paste a valid Pin link into the tool to check whether downloadable media is available.</p><p>Private, deleted, restricted, unavailable, or otherwise inaccessible Pins may not be downloadable. Availability also depends on the media exposed by the source.</p></div><div class="disc"><p><strong>Use content responsibly.</strong> Only download media that you have permission to use. Respect copyright, intellectual-property rights, privacy, and Pinterest's applicable policies.</p></div></div></section>
+
+<section><div class="pvdc"><div class="kicker">Questions answered</div><h2>Frequently Asked Questions</h2><div class="faq">
+<details><summary>What is a Pinterest Video Downloader?</summary><p>A Pinterest Video Downloader is an online tool that processes a Pinterest Pin URL and provides available downloadable video media from a public Pin.</p></details>
+<details><summary>How do I download a video from Pinterest?</summary><p>Copy the link of the Pinterest Pin containing the video, paste it into the downloader, select Download, and save the available video.</p></details>
+<details><summary>Can I download Pinterest videos as MP4?</summary><p>When an MP4 video source is available, the downloader can provide the video as an MP4 download.</p></details>
+<details><summary>Can I use this Pinterest downloader on iPhone?</summary><p>Yes. Open the browser-based downloader on an iPhone or iPad and paste a public Pinterest Pin link.</p></details>
+<details><summary>Does the Pinterest downloader work on Android?</summary><p>Yes. You can access the downloader through a modern Android browser and paste the Pinterest URL.</p></details>
+<details><summary>Do I need to install a Pinterest downloader app?</summary><p>No dedicated app is required to use the browser version of this tool.</p></details>
+<details><summary>Can I download Pinterest images?</summary><p>Supported Pinterest images can be processed. For image-focused functionality, use the Pinterest Image Downloader.</p></details>
+<details><summary>Can I download Pinterest GIFs?</summary><p>If a public Pin contains supported GIF media, the downloader may provide an available GIF or media download option.</p></details>
+<details><summary>Can I download a private Pinterest video?</summary><p>No. The tool is intended for publicly accessible Pinterest content. Private or restricted Pins may not be accessible.</p></details>
+<details><summary>Is the Pinterest Video Downloader free?</summary><p>The basic web tool is designed to be free to use.</p></details>
+<details><summary>Do I need a Pinterest account?</summary><p>You generally do not need to sign in to this downloader. Access to a particular Pin can still depend on Pinterest's own availability and access requirements.</p></details>
+<details><summary>Can I use the downloader on a PC or Mac?</summary><p>Yes. You can use it on Windows, Mac, Chromebook, or another compatible computer through a modern browser.</p></details>
+<details><summary>Can I download Pinterest videos in 4K?</summary><p>Only when the source provides a 4K-quality version. The downloader should not claim a higher resolution than the available source.</p></details>
+<details><summary>Why isn't my Pinterest video downloading?</summary><p>The Pin may be private, deleted, restricted, unavailable, incorrectly copied, or may not contain downloadable video media. Try copying the Pin URL again and make sure it is publicly accessible.</p></details>
+<details><summary>Does the downloader store Pinterest videos?</summary><p>Describe your actual storage and processing policy in the site's Privacy Policy. The frontend sends the submitted URL to your configured backend only when the user requests processing.</p></details>
+</div></div></section>
+
+<section class="white"><div class="pvdc"><div class="kicker">Explore more</div><h2>Related Pinterest Tools</h2><div class="cards"><a class="card" href="/pinterest-image-downloader/"><h3>Pinterest Image Downloader</h3><p>Download supported Pinterest images and pictures.</p></a><a class="card" href="/pinterest-gif-downloader/"><h3>Pinterest GIF Downloader</h3><p>Find and save supported animated media.</p></a><a class="card" href="/pinterest-pin-downloader/"><h3>Pinterest Pin Downloader</h3><p>Process a Pinterest Pin URL and identify media.</p></a><a class="card" href="/pinterest-video-to-mp4/"><h3>Pinterest Video to MP4</h3><p>Learn about supported MP4 downloads.</p></a><a class="card" href="/pinterest-downloader-for-android/"><h3>Pinterest Downloader for Android</h3><p>Mobile-focused usage guidance.</p></a><a class="card" href="/pinterest-downloader-for-iphone/"><h3>Pinterest Downloader for iPhone</h3><p>iPhone and iPad usage guidance.</p></a></div></div></section>
+
+<section><div class="pvdc"><div class="disc"><p><strong>Disclaimer:</strong> This website is an independent third-party tool and is not affiliated with, endorsed by, or sponsored by Pinterest. It is designed to help users process publicly accessible Pinterest URLs. Only download content that you have permission to use. Respect copyright, intellectual-property rights, privacy, and Pinterest's applicable policies. Users are responsible for how downloaded content is used.</p></div></div></section>
+</main>
+
+<footer><div class="pvdc"><div class="fg"><div><h3>Online Font Generate</h3><p>Free online tools for creators, social media users, and everyday web tasks.</p></div><div><h3>Pinterest Tools</h3><a href="/pinterest-video-downloader/">Pinterest Video Downloader</a><a href="/pinterest-image-downloader/">Pinterest Image Downloader</a><a href="/pinterest-gif-downloader/">Pinterest GIF Downloader</a><a href="/pinterest-pin-downloader/">Pinterest Pin Downloader</a></div><div><h3>Website</h3><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy-policy/">Privacy Policy</a><a href="/terms-and-conditions/">Terms &amp; Conditions</a><a href="/disclaimer/">Disclaimer</a></div></div><div class="copy">© 2026 Online Font Generate. All rights reserved.</div></div></footer>
 
 <script>
-(() => {
-  const $ = id => document.getElementById(id);
-  const input = $('pinUrl'), go = $('goBtn'), paste = $('pasteBtn');
-  const status = $('status'), results = $('results'), cards = $('cards'), count = $('count');
-
-  // IMPORTANT:
-  // A browser cannot reliably scrape Pinterest directly because of CORS and
-  // Pinterest's server-side rendering/anti-bot behavior. Therefore this HTML
-  // talks to public resolver services instead of pretending an image poster
-  // is an MP4.
-  const RESOLVERS = [
-    {
-      name: 'Preniv',
-      method: 'GET',
-      build: u => 'https://prenivapi.vercel.app/api/pinterest?url=' + encodeURIComponent(u)
-    },
-    {
-      name: 'Pin Resolver',
-      method: 'POST',
-      build: u => 'https://pin.vinayop.cloud/pin',
-      body: u => JSON.stringify({url:u})
-    }
-  ];
-
-  function setStatus(msg, err=false){
-    status.textContent = msg;
-    status.classList.remove('hidden','err');
-    if(err) status.classList.add('err');
+// Pinterest resolver backend.
+// After deploying the Python resolver to Render, replace ONLY this URL.
+// Example: const API_BASE = "https://pinterest-media-resolver.onrender.com";
+const API_BASE = "https://pinterest-resolver.onrender.com";
+const API_ENDPOINT = API_BASE + "/api/resolve";
+const $=id=>document.getElementById(id);
+function msg(t,c="info"){const e=$("status");e.className="status show "+c;e.textContent=t}
+function valid(v){
+  try{
+    const h=new URL(v).hostname.toLowerCase().replace(/^www\./,"");
+    return h==="pin.it" || h==="pinterest.com" || h.endsWith(".pinterest.com") ||
+      /^pinterest\.[a-z.]+$/.test(h) || h.endsWith(".pinterest.co.uk");
+  }catch(e){return false}
+}
+$("paste").onclick=async()=>{try{$("pvd-url").value=await navigator.clipboard.readText()}catch(e){msg("Please paste your Pinterest link into the box.","info")}}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function render(media){
+ if(!Array.isArray(media)||!media.length){
+   $("result").innerHTML='<div class="status show info">No downloadable media was returned for this Pin.</div>';
+   $("result").classList.add("show");
+   return;
+ }
+ const cards=media.map(x=>{
+   const u=x.url||x.download_url||"",t=(x.type||"media").toLowerCase(),
+         f=(x.format||(t==="video"?"mp4":t)).toUpperCase(),
+         q=x.quality||x.resolution||"Available",
+         title=x.title||(t==="video"?"Pinterest Video":t==="image"?"Pinterest Image":t==="gif"?"Pinterest GIF":"Pinterest Media"),
+         p=x.thumbnail||"";
+   let preview="";
+   if(t==="video" && u){
+     preview='<video controls preload="metadata" playsinline poster="'+esc(p)+'"><source src="'+esc(u)+'" type="video/mp4"></video>';
+   }else if(p){
+     preview='<img src="'+esc(p)+'" alt="'+esc(title)+'" loading="lazy">';
+   }else if(t==="image" && u){
+     preview='<img src="'+esc(u)+'" alt="'+esc(title)+'" loading="lazy">';
+   }else{
+     preview='<span>Preview unavailable</span>';
+   }
+   return '<article class="media"><div class="preview">'+preview+'</div><div class="mi"><strong>'+esc(title)+'</strong><div class="meta"><span>'+esc(f)+'</span><span>'+esc(q)+'</span>'+(x.size?'<span>'+esc(x.size)+'</span>':'')+'</div>'+(u?'<a class="dl" href="'+esc(API_BASE+"/api/download?url="+encodeURIComponent(u))+'" target="_blank" rel="noopener">Download '+esc(f)+'</a>':'')+'</div></article>';
+ }).join("");
+ $("result").innerHTML='<div class="rhead"><h3>Pinterest Media Found</h3><span>'+media.length+' available option'+(media.length===1?"":"s")+'</span></div><div class="grid">'+cards+'</div>';
+ $("result").classList.add("show");
+}
+$("pvd-form").onsubmit=async e=>{
+ e.preventDefault();const url=$("pvd-url").value.trim(),b=$("submit");$("result").classList.remove("show");
+ if(!valid(url)){msg("Please enter a valid Pinterest URL, such as a Pinterest Pin link or pin.it link.","error");return}
+ 
+ if(API_BASE.includes("YOUR-RENDER-SERVICE")){
+    msg("Please replace YOUR-RENDER-SERVICE with your actual Render service URL first.","error");
+    return;
   }
-
-  function clearStatus(){ status.classList.add('hidden'); }
-
-  function validPinterest(u){
-    try{
-      const x = new URL(u);
-      return /(^|\.)pin\.it$|(^|\.)pinterest\.[a-z.]+$/i.test(x.hostname);
-    }catch(e){ return false; }
+  b.disabled=true;b.textContent="Processing...";msg("Processing the Pinterest link and checking available media...","info");
+ try{
+  const r=await fetch(API_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({url})});
+  const raw=await r.text();
+  let d={};
+  try{d=JSON.parse(raw)}catch(parseError){
+    const clean=raw.replace(/<[^>]*>/g," ").replace(/\\s+/g," ").trim();
+    throw Error(clean || "The server returned an invalid response.");
   }
-
-  function first(obj, keys){
-    for(const k of keys){
-      if(obj && obj[k] != null) return obj[k];
-    }
-    return null;
-  }
-
-  function flattenMedia(data){
-    // Normalize several common Pinterest resolver response shapes.
-    const out = [];
-
-    const push = (x, inheritedType='') => {
-      if(!x || typeof x !== 'object') return;
-
-      const type = String(first(x,['type','media_type','mediaType','kind']) || inheritedType).toLowerCase();
-      const url = first(x,['url','download_url','downloadUrl','video_url','videoUrl','src','media_url','mediaUrl']);
-      const thumb = first(x,['thumbnail','thumbnail_url','thumbnailUrl','poster','poster_url','image','image_url','imageUrl']);
-      const title = first(x,['title','name']) || 'Pinterest Media';
-      const quality = first(x,['quality','format','label','resolution']) || '';
-
-      if(url && typeof url === 'string'){
-        const lower=url.toLowerCase();
-        const isVideo = type.includes('video') || /\.mp4(\?|$)/i.test(lower) || /v\d?\.pinimg\.com\/videos/i.test(lower);
-        const isImage = type.includes('image') || /\.(jpe?g|png|webp|gif)(\?|$)/i.test(lower);
-        if(isVideo || isImage){
-          out.push({url,type:isVideo?'video':'image',thumb:thumb||'',title,quality});
-        }
-      }
-
-      for(const k of ['items','media','results','data','formats','videos','video_formats','videoFormats']){
-        const v=x[k];
-        if(Array.isArray(v)) v.forEach(i=>push(i, type));
-        else if(v && typeof v==='object') push(v,type);
-      }
-    };
-
-    push(data, String(data?.type||data?.media_type||''));
-
-    // Some APIs put the useful result under data.result / data.results / item / pin.
-    for(const k of ['result','item','pin','media','data','results']){
-      const v=data?.[k];
-      if(Array.isArray(v)) v.forEach(i=>push(i,''));
-      else if(v && typeof v==='object') push(v,'');
-    }
-
-    // Deduplicate and prefer video.
-    const seen = new Set(), clean=[];
-    for(const m of out){
-      if(seen.has(m.url)) continue;
-      seen.add(m.url);
-      clean.push(m);
-    }
-    clean.sort((a,b)=>(b.type==='video')-(a.type==='video'));
-    return clean;
-  }
-
-  async function callResolver(r, url){
-    const opts = {
-      method:r.method,
-      headers:{'Accept':'application/json'}
-    };
-    if(r.method==='POST'){
-      opts.headers['Content-Type']='application/json';
-      opts.body=r.body(url);
-    }
-    const res=await fetch(r.build(url),opts);
-    const text=await res.text();
-    let data;
-    try{ data=JSON.parse(text); }
-    catch(e){ throw new Error(r.name+' returned a non-JSON response'); }
-    if(!res.ok) throw new Error(data?.message || data?.error?.message || r.name+' HTTP '+res.status);
-    return data;
-  }
-
-  function render(items){
-    cards.innerHTML='';
-    const videos=items.filter(x=>x.type==='video');
-    const images=items.filter(x=>x.type==='image');
-
-    // If a real video exists, NEVER render its poster as a downloadable image.
-    const finalItems = videos.length ? videos : images.slice(0,5);
-
-    count.textContent = finalItems.length + (finalItems.length===1?' available option':' available options');
-
-    finalItems.forEach((m,i)=>{
-      const card=document.createElement('div');
-      card.className='card';
-
-      const preview=document.createElement('div');
-      preview.className='preview';
-
-      if(m.type==='video'){
-        const v=document.createElement('video');
-        v.controls=true; v.playsInline=true; v.preload='metadata';
-        if(m.thumb) v.poster=m.thumb;
-        const source=document.createElement('source');
-        source.src=m.url; source.type='video/mp4';
-        v.appendChild(source);
-        preview.appendChild(v);
-      }else{
-        const img=document.createElement('img');
-        img.src=m.url; img.alt=m.title;
-        img.loading='lazy';
-        preview.appendChild(img);
-      }
-
-      const body=document.createElement('div'); body.className='body';
-      const title=document.createElement('div'); title.className='title'; title.textContent=m.title;
-
-      const chips=document.createElement('div'); chips.className='chips';
-      const c1=document.createElement('span'); c1.className='chip'; c1.textContent=m.type==='video'?'MP4':'JPG';
-      chips.appendChild(c1);
-      if(m.quality){const c2=document.createElement('span');c2.className='chip';c2.textContent=m.quality;chips.appendChild(c2);}
-
-      const a=document.createElement('a');
-      a.className='dl';
-      a.href=m.url;
-      a.target='_blank';
-      a.rel='noopener';
-      a.download='';
-      a.textContent=m.type==='video'?'Download MP4':'Download Image';
-
-      body.append(title,chips,a);
-      card.append(preview,body);
-      cards.appendChild(card);
-    });
-
-    results.classList.remove('hidden');
-
-    if(videos.length) setStatus('Pinterest video found. The poster image is used only as a thumbnail.');
-    else setStatus('No public MP4 was returned by the resolver. This Pin may be an image, private/restricted, or Pinterest may not expose a downloadable video file.', true);
-  }
-
-  async function run(){
-    const url=input.value.trim();
-    if(!validPinterest(url)){
-      setStatus('Please enter a valid public Pinterest or pin.it URL.',true);
-      return;
-    }
-
-    go.disabled=true;
-    results.classList.add('hidden');
-    cards.innerHTML='';
-    setStatus('Resolving the Pinterest Pin…');
-
-    let all=[];
-    let errors=[];
-
-    for(const r of RESOLVERS){
-      try{
-        const data=await callResolver(r,url);
-        const media=flattenMedia(data);
-        if(media.length){
-          all=media;
-          break;
-        }
-        errors.push(r.name+' returned no media');
-      }catch(e){
-        errors.push(e.message);
-      }
-    }
-
-    if(all.length){
-      render(all);
-    }else{
-      setStatus('Could not resolve a downloadable public media file. '+errors.join(' | '),true);
-    }
-    go.disabled=false;
-  }
-
-  paste.addEventListener('click',async()=>{
-    try{
-      input.value=await navigator.clipboard.readText();
-      input.focus();
-    }catch(e){
-      input.focus();
-      setStatus('Clipboard permission was blocked. Paste the link manually.',true);
-    }
-  });
-
-  go.addEventListener('click',run);
-  input.addEventListener('keydown',e=>{if(e.key==='Enter')run();});
-})();
+  if(!r.ok||d.success===false) throw Error(d.message||"The server could not process this Pinterest URL.");
+  render(d.media||[]);
+  msg(d.message||"The Pinterest URL was processed successfully.","success");
+}catch(x){
+  msg(x.message||"Something went wrong. Please try again.","error");
+}finally{b.disabled=false;b.textContent="Download"}
+}
 </script>
-</body>
-</html>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"WebApplication","name":"Pinterest Video Downloader","url":"https://onlinefontgenerate.com/pinterest-video-downloader/","applicationCategory":"MultimediaApplication","operatingSystem":"Any","description":"Online Pinterest video downloader for processing publicly accessible Pinterest Pin URLs and finding available downloadable media.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},
+{"@type":"HowTo","name":"How to Download Videos From Pinterest","description":"Steps for downloading supported media from a public Pinterest Pin.","step":[{"@type":"HowToStep","name":"Copy the Pinterest link","text":"Open Pinterest, find the Pin containing the video, and copy its link."},{"@type":"HowToStep","name":"Paste the Pin URL","text":"Paste the Pinterest URL into the downloader."},{"@type":"HowToStep","name":"Download the media","text":"Review available media and select the appropriate download option."}]},
+{"@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"What is a Pinterest Video Downloader?","acceptedAnswer":{"@type":"Answer","text":"A Pinterest Video Downloader is an online tool that processes a Pinterest Pin URL and provides available downloadable video media from a public Pin."}},
+{"@type":"Question","name":"How do I download a video from Pinterest?","acceptedAnswer":{"@type":"Answer","text":"Copy the link of the Pinterest Pin containing the video, paste it into the downloader, select Download, and save the available video."}},
+{"@type":"Question","name":"Can I download Pinterest videos as MP4?","acceptedAnswer":{"@type":"Answer","text":"When an MP4 video source is available, the downloader can provide the video as an MP4 download."}},
+{"@type":"Question","name":"Can I use this Pinterest downloader on iPhone?","acceptedAnswer":{"@type":"Answer","text":"Yes. Open the browser-based downloader on an iPhone or iPad and paste a public Pinterest Pin link."}},
+{"@type":"Question","name":"Does the Pinterest downloader work on Android?","acceptedAnswer":{"@type":"Answer","text":"Yes. You can access the downloader through a modern Android browser and paste the Pinterest URL."}},
+{"@type":"Question","name":"Do I need to install a Pinterest downloader app?","acceptedAnswer":{"@type":"Answer","text":"No dedicated app is required to use the browser version of this tool."}},
+{"@type":"Question","name":"Can I download Pinterest images?","acceptedAnswer":{"@type":"Answer","text":"Supported Pinterest images can be processed. For image-focused functionality, use the Pinterest Image Downloader."}},
+{"@type":"Question","name":"Can I download Pinterest GIFs?","acceptedAnswer":{"@type":"Answer","text":"If a public Pin contains supported GIF media, the downloader may provide an available GIF or media download option."}},
+{"@type":"Question","name":"Can I download a private Pinterest video?","acceptedAnswer":{"@type":"Answer","text":"No. The tool is intended for publicly accessible Pinterest content. Private or restricted Pins may not be accessible."}},
+{"@type":"Question","name":"Is the Pinterest Video Downloader free?","acceptedAnswer":{"@type":"Answer","text":"The basic web tool is designed to be free to use."}},
+{"@type":"Question","name":"Can I use the downloader on a PC or Mac?","acceptedAnswer":{"@type":"Answer","text":"Yes. You can use it on Windows, Mac, Chromebook, or another compatible computer through a modern browser."}},
+{"@type":"Question","name":"Can I download Pinterest videos in 4K?","acceptedAnswer":{"@type":"Answer","text":"Only when the source provides a 4K-quality version. The downloader should not claim a higher resolution than the available source."}}
+]}
+]}
+</script>
+</div>
