@@ -130,7 +130,7 @@ $("pvd-form").onsubmit=async e=>{
  e.preventDefault();const url=$("pvd-url").value.trim(),b=$("submit");$("result").classList.remove("show");
  if(!valid(url)){msg("Please enter a valid Pinterest URL, such as a Pinterest Pin link or pin.it link.","error");return}
  
- if(API_BASE.includes("YOUR-RENDER-SERVICE")){
+ if(API_BASE.includes("https://pinterest-resolver.onrender.com")){
     msg("Please replace YOUR-RENDER-SERVICE with your actual Render service URL first.","error");
     return;
   }
