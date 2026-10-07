@@ -64,3 +64,19 @@ Then the frontend calls:
 POST ${API_BASE}/api/resolve
 
 The returned media item includes the direct Pinterest CDN URL and a backend `/api/download` proxy can be used for one-click download.
+
+
+## v1.1 CORS troubleshooting
+
+v1.1 allows public cross-origin browser requests so an Elementor/Pantheon
+frontend can call the Render API without a CORS preflight failure.
+
+After deployment, test:
+- GET /health
+- GET /api/cors-test
+
+If both open in the browser, the Render API is reachable. The Elementor
+frontend must use the exact Render `onrender.com` service URL as `API_BASE`.
+
+After the first successful production test, CORS can be restricted to the
+production frontend domain.
