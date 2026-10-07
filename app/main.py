@@ -17,7 +17,7 @@ from pydantic import BaseModel, HttpUrl
 from playwright.async_api import async_playwright
 
 APP_NAME = "Pinterest Media Resolver"
-VERSION = "1.0.0"
+VERSION = "1.2.0"
 
 ALLOWED_PIN_HOSTS = {
     "pinterest.com", "www.pinterest.com",
@@ -414,23 +414,32 @@ async def resolve(url: str) -> dict:
 
 def build_result(final_url: str, media: dict) -> dict:
     if media["videos"]:
-        video = media["videos"][0]
         poster = media["posters"][0] if media["posters"] else (
             media["images"][0] if media["images"] else None
         )
-        return {
-            "success": True,
-            "type": "video",
-            "pin_url": final_url,
-            "media": [{
+        # Return every distinct progressive MP4 candidate we found, ordered
+        # from highest detected quality to lowest. The frontend can then offer
+        # Best/HD/720p/etc. instead of receiving only one URL.
+        unique = []
+        seen = set()
+        for video in media["videos"]:
+            if video in seen:
+                continue
+            seen.add(video)
+            unique.append({
                 "type": "video",
                 "format": "mp4",
                 "quality": quality_label(video),
                 "url": video,
                 "download_url": "/api/download?url=" + video,
                 "thumbnail": poster,
-            }],
-            "message": "Pinterest video found.",
+            })
+        return {
+            "success": True,
+            "type": "video",
+            "pin_url": final_url,
+            "media": unique[:12],
+            "message": "Pinterest video found with the highest available progressive MP4 options returned by Pinterest.",
         }
 
     images = media["images"] or media["posters"]
@@ -448,18 +457,24 @@ def build_result(final_url: str, media: dict) -> dict:
         "message": "Pinterest image media found.",
     }
 
-
 def quality_label(url: str) -> str:
     v = url.lower()
+    # Pinterest CDN URLs do not always expose the resolution in a consistent
+    # filename. These labels are therefore conservative: only claim a numeric
+    # resolution when it is actually present in the URL.
+    if "2160" in v or "4k" in v:
+        return "2160p (4K)"
+    if "1440" in v:
+        return "1440p"
     if "1080" in v:
-        return "1080p"
+        return "1080p (Full HD)"
     if "720" in v or "720w" in v:
-        return "720p"
+        return "720p (HD)"
     if "480" in v:
         return "480p"
     if "360" in v:
         return "360p"
-    return "MP4"
+    return "Best Available MP4"
 
 
 def image_format(url: str) -> str:
