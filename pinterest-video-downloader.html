@@ -1,19 +1,24 @@
 <!-- Elementor-ready Pinterest Video Downloader. Replace API_ENDPOINT with your server endpoint. -->
-<div id="pvd">
+<title>Pinterest Video Downloader</title>
+<meta name="description" content="Pinterest Video Downloader for saving publicly accessible Pinterest videos, images, and GIFs in available high quality.">
+<div id="pvd" class="pvd-site">
 <style>
 #pvd{--r:#e60023;--rd:#b9001d;--ink:#17171a;--mut:#666871;--bd:#eadfe2;--bg:#fff7f8;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+html,body{margin:0!important;padding:0!important;background:#fff7f8!important}
+body{min-width:100%;overflow-x:hidden}
+#pvd{width:100%;min-height:100vh;background:#fff7f8!important}
 #pvd *{box-sizing:border-box}#pvd a{color:inherit}.pvdc{width:min(1120px,calc(100% - 32px));margin:auto}
-.pvdnav{height:72px;background:#fff;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.pvdnav{height:72px;background:#fff7f8;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
 .pvdlogo{font-weight:850;font-size:21px;text-decoration:none}.pvdlogo span{color:var(--r)}.pvdlinks{display:flex;gap:24px}.pvdlinks a{font-size:14px;font-weight:700;text-decoration:none}
 .pvdhero{text-align:center;padding:72px 0 48px;background:linear-gradient(#fff,#fff7f8)}.eyebrow{display:inline-block;background:#ffe5e9;color:#b0001b;border:1px solid #ffd0d7;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
 h1{font-size:clamp(38px,5vw,62px);line-height:1.06;letter-spacing:-2.5px;margin:18px auto 14px;max-width:850px}h1 span{color:var(--r)}
 .lead{font-size:18px;color:var(--mut);max-width:780px;margin:0 auto 30px}
-.tool{background:#fff;border:1px solid var(--bd);border-radius:24px;padding:22px;box-shadow:0 18px 50px #21141817;max-width:920px;margin:auto;text-align:left}
-.row{display:flex;gap:10px}.iw{position:relative;flex:1}.input{width:100%;height:58px;border:1px solid #dcd4d7;border-radius:14px;padding:0 100px 0 17px;font-size:15px;outline:0}.input:focus{border-color:var(--r);box-shadow:0 0 0 4px #e6002317}.paste{position:absolute;right:7px;top:7px;height:44px;border:0;border-radius:10px;background:#f4eef0;padding:0 15px;font-weight:750;cursor:pointer}.download{height:58px;border:0;border-radius:14px;padding:0 28px;background:var(--r);color:#fff;font-weight:800;cursor:pointer}.download:hover{background:var(--rd)}
-.status{display:none;margin-top:12px;padding:11px 13px;border-radius:10px;font-size:14px}.status.show{display:block}.error{background:#fff0f1;color:#a40019}.info{background:#f4f6f8;color:#50545c}.success{background:#edf9f3;color:#12643f}
+.tool{background:#ffffff;border:1px solid var(--bd);border-radius:24px;padding:22px;box-shadow:0 18px 50px #21141817;max-width:920px;margin:auto;text-align:left}
+.row{display:flex;gap:10px}.iw{position:relative;flex:1}.input{width:100%;height:58px;border:1px solid #d7d0d3;border-radius:14px;padding:0 17px;font-size:15px;outline:0;background:#fff;color:#17171a}.input:focus{border-color:var(--r);box-shadow:0 0 0 4px #e6002317}.download{height:58px;border:0;border-radius:14px;padding:0 28px;background:var(--r);color:#fff;font-weight:800;cursor:pointer}.download:hover{background:var(--rd)}
+.status{display:none;min-height:0;margin-top:12px;padding:11px 13px;border-radius:10px;font-size:14px}.status.show{display:block}.error{background:#fff0f1;color:#a40019}.info{background:#f4f6f8;color:#50545c}.success{background:#edf9f3;color:#12643f}
 .trust{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:18px}.trust span{font-size:12px;font-weight:700;background:#fff;border:1px solid var(--bd);padding:6px 11px;border-radius:999px}
 .result{display:none;margin-top:20px;border-top:1px solid var(--bd);padding-top:20px}.result.show{display:block}.rhead{display:flex;justify-content:space-between;gap:10px}.rhead h3{margin:0}.rhead span{font-size:12px;color:var(--mut)}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}.media{border:1px solid var(--bd);border-radius:16px;overflow:hidden}.preview{background:#171717;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:180px}.preview img{display:block;width:100%;height:auto;max-height:720px;object-fit:contain}.preview video{display:block;width:100%;height:auto;max-height:720px;object-fit:contain;background:#000}.mi{padding:14px}.mi strong{display:block;margin-bottom:8px}.meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}.meta span{font-size:11px;background:#f6f1f2;padding:4px 8px;border-radius:7px}.dl{display:block;text-align:center;text-decoration:none;background:var(--r);color:#fff!important;border-radius:10px;padding:9px;font-size:12px;font-weight:800}
-section{padding:64px 0}section.white{background:#fff}.kicker{color:var(--r);font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}h2{font-size:clamp(28px,3.4vw,40px);line-height:1.15;letter-spacing:-1px;margin:0 0 14px}h3{font-size:19px;line-height:1.3;margin:0 0 7px}p{color:#555860;max-width:860px}.intro{font-size:16px;max-width:790px}
+section{padding:64px 0}section.white{background:#fff7f8}.kicker{color:var(--r);font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}h2{font-size:clamp(28px,3.4vw,40px);line-height:1.15;letter-spacing:-1px;margin:0 0 14px}h3{font-size:19px;line-height:1.3;margin:0 0 7px}p{color:#555860;max-width:860px}.intro{font-size:16px;max-width:790px}
 .cards,.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}.card,.step,.device{background:#fff;border:1px solid var(--bd);border-radius:18px;padding:21px}.icon{width:40px;height:40px;border-radius:12px;background:#ffe7eb;color:#b5001d;display:flex;align-items:center;justify-content:center;font-weight:900;margin-bottom:13px}.card p,.step p{font-size:14px;margin:0}.stepnum{width:34px;height:34px;border-radius:10px;background:#ffe4e8;color:#b4001d;display:flex;align-items:center;justify-content:center;font-weight:900;margin-bottom:12px}
 .devices{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:25px}.device strong{display:block}.device span{font-size:13px;color:var(--mut)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:30px}.faq{border-top:1px solid var(--bd)}details{border-bottom:1px solid var(--bd)}summary{cursor:pointer;list-style:none;padding:19px 4px;font-weight:800}summary::-webkit-details-marker{display:none}details p{padding:0 4px 19px;margin:0;font-size:14px}
@@ -21,9 +26,157 @@ section{padding:64px 0}section.white{background:#fff}.kicker{color:var(--r);font
 footer{background:#17171a;color:#aaa;padding:48px 0 24px}.fg{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:35px}footer h3{color:#fff;font-size:15px}footer a{display:block;text-decoration:none;color:#aaa;font-size:13px;margin:7px 0}.copy{border-top:1px solid #303035;margin-top:28px;padding-top:16px;font-size:12px}
 .sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .singleMedia{border:1px solid var(--bd);border-radius:16px;overflow:hidden;background:#fff;max-width:760px;margin:14px auto 0}.singleMedia .mi{padding:16px}.qualityRow{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 14px}.metaChip{font-size:11px;background:#f6f1f2;padding:5px 9px;border-radius:7px;font-weight:700}.downloadOptions{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px}.qualityNote{font-size:12px!important;color:var(--mut)!important;margin:12px 0 0!important}.singleMedia .preview{max-width:100%}.singleMedia .preview video{max-width:100%;max-height:720px}.singleMedia .preview img{max-width:100%}.downloadOptions .dl{display:block;text-align:center;background:var(--r);color:#fff!important;border-radius:10px;padding:10px;font-size:12px;font-weight:800;text-decoration:none}@media(max-width:760px){.pvdlinks{display:none}.row,.two{display:grid;grid-template-columns:1fr}.download{width:100%}.cards,.steps,.grid{grid-template-columns:1fr}.devices{grid-template-columns:1fr}h1{font-size:40px}.pvdhero{padding-top:50px}.tool{padding:14px}.fg{grid-template-columns:1fr}}
+
+/* v1.4 spacing + responsive refinements */
+#pvd{overflow:hidden}
+#pvd section{padding:42px 0}
+#pvd .pvdhero{padding:52px 0 34px}
+#pvd .cards,#pvd .steps{margin-top:20px}
+#pvd .devices{margin-top:20px}
+#pvd .tool{margin-bottom:0}
+#pvd .intro{margin-bottom:10px}
+#pvd section + section{padding-top:42px}
+#pvd h2{margin-bottom:10px}
+#pvd p{margin-top:0;margin-bottom:12px}
+#pvd .card,#pvd .step,#pvd .device{padding:18px}
+#pvd .two{gap:22px}
+#pvd .disc{padding:16px}
+
+@media(max-width:900px){
+  #pvd .pvdc{width:min(100% - 28px,760px)}
+  #pvd .pvdhero{padding:42px 0 28px}
+  #pvd section{padding:34px 0}
+  #pvd section + section{padding-top:34px}
+  #pvd .cards,#pvd .steps{grid-template-columns:repeat(2,1fr);gap:12px}
+  #pvd .devices{grid-template-columns:repeat(2,1fr);gap:12px}
+}
+
+@media(max-width:600px){
+  #pvd .pvdc{width:calc(100% - 24px)}
+  #pvd .pvdhero{padding:34px 0 22px}
+  #pvd section,#pvd section + section{padding:28px 0}
+  #pvd h1{font-size:38px;letter-spacing:-1.5px}
+  #pvd h2{font-size:29px}
+  #pvd .lead{font-size:16px}
+  #pvd .tool{padding:12px;border-radius:18px}
+  #pvd .row{display:grid;grid-template-columns:1fr;gap:9px}
+  #pvd .input{height:54px;padding-right:17px}
+  #pvd .paste{height:40px;top:7px;right:7px}
+  #pvd .download{height:54px;width:100%}
+  #pvd .cards,#pvd .steps,#pvd .devices,#pvd .two{grid-template-columns:1fr;gap:10px}
+  #pvd .card,#pvd .step,#pvd .device{padding:16px}
+  #pvd .trust{gap:6px;margin-top:12px}
+  #pvd .trust span{font-size:11px;padding:5px 8px}
+  #pvd .fg{grid-template-columns:1fr;gap:20px}
+}
+
+@media(min-width:761px){
+  #pvd .pvdhero + section{padding-top:36px}
+}
+
+/* Mobile menu: visible only on mobile; desktop navigation stays unchanged */
+#pvd .pvd-mobile-toggle{display:none}
+#pvd .pvd-mobile-menu{display:none}
+
+@media(max-width:760px){
+  #pvd .pvdnav{position:relative;height:64px}
+  #pvd .pvdlinks{display:none!important}
+
+  #pvd .pvd-mobile-toggle{
+    display:flex!important;
+    width:42px;
+    height:42px;
+    padding:8px;
+    margin-left:auto;
+    border:1px solid var(--bd);
+    border-radius:10px;
+    background:#fff;
+    cursor:pointer;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+  }
+
+  #pvd .pvd-mobile-toggle span{
+    display:block;
+    width:23px;
+    height:2px;
+    border-radius:2px;
+    background:#17171a;
+    transition:.2s ease;
+  }
+
+  #pvd .pvd-mobile-menu{
+    position:absolute;
+    top:calc(100% + 1px);
+    left:0;
+    right:0;
+    z-index:99999;
+    display:none;
+    flex-direction:column;
+    gap:2px;
+    padding:10px;
+    background:#fff7f8;
+    border:1px solid var(--bd);
+    border-top:0;
+    border-radius:0 0 14px 14px;
+    box-shadow:0 12px 28px rgba(23,23,26,.10);
+  }
+
+  #pvd .pvd-mobile-menu.is-open{display:flex!important}
+
+  #pvd .pvd-mobile-menu a{
+    display:block;
+    padding:12px 14px;
+    border-radius:9px;
+    color:#17171a!important;
+    font-size:14px;
+    font-weight:700;
+    text-decoration:none!important;
+  }
+
+  #pvd .pvd-mobile-menu a:hover{
+    background:#fff;
+    color:#e60023!important;
+  }
+
+  #pvd .pvd-mobile-toggle.is-open span:nth-child(1){
+    transform:translateY(7px) rotate(45deg);
+  }
+  #pvd .pvd-mobile-toggle.is-open span:nth-child(2){opacity:0}
+  #pvd .pvd-mobile-toggle.is-open span:nth-child(3){
+    transform:translateY(-7px) rotate(-45deg);
+  }
+}
+
 </style>
 
-<header><div class="pvdc pvdnav"><a class="pvdlogo" href="/">Online<span>Font</span>Generate</a><nav class="pvdlinks"><a href="/pinterest-video-downloader/">Pinterest Downloader</a><a href="/pinterest-image-downloader/">Image Downloader</a><a href="/pinterest-gif-downloader/">GIF Downloader</a><a href="/about/">About</a><a href="/contact/">Contact</a></nav></div></header>
+<header>
+<div class="pvdc pvdnav">
+  <a class="pvdlogo" href="/">Pinterest<span> Downloader</span></a>
+  <nav class="pvdlinks" aria-label="Desktop navigation">
+    <a href="/pinterest-video-downloader/">Pinterest Downloader</a>
+    <a href="/pinterest-image-downloader/">Image Downloader</a>
+    <a href="/pinterest-gif-downloader/">GIF Downloader</a>
+    <a href="/about/">About</a>
+    <a href="/contact/">Contact</a>
+  </nav>
+
+  <button class="pvd-mobile-toggle" id="pvd-mobile-toggle" type="button"
+          aria-label="Open menu" aria-expanded="false" aria-controls="pvd-mobile-menu">
+    <span></span><span></span><span></span>
+  </button>
+
+  <nav class="pvd-mobile-menu" id="pvd-mobile-menu" aria-label="Mobile navigation" aria-hidden="true">
+    <a href="/pinterest-video-downloader/">Pinterest Downloader</a>
+    <a href="/pinterest-image-downloader/">Image Downloader</a>
+    <a href="/pinterest-gif-downloader/">GIF Downloader</a>
+    <a href="/about/">About</a>
+    <a href="/contact/">Contact</a>
+  </nav>
+</div>
+</header>
 
 <main>
 <section class="pvdhero"><div class="pvdc">
@@ -31,7 +184,7 @@ footer{background:#17171a;color:#aaa;padding:48px 0 24px}.fg{display:grid;grid-t
 <h1>Pinterest Video <span>Downloader</span></h1>
 <p class="lead">Download Pinterest videos, images, and GIFs online. Paste a public Pinterest Pin link and find the available media for your device.</p>
 <div class="tool">
-<form id="pvd-form"><label class="sr" for="pvd-url">Pinterest video URL</label><div class="row"><div class="iw"><input id="pvd-url" class="input" type="url" inputmode="url" placeholder="Paste Pinterest link here" required><button class="paste" type="button" id="paste">Paste</button></div><button class="download" id="submit" type="submit">Download</button></div></form>
+<form id="pvd-form"><label class="sr" for="pvd-url">Pinterest video URL</label><div class="row"><div class="iw"><input id="pvd-url" class="input" type="url" inputmode="url" placeholder="Paste Pinterest link here" required></div><button class="download" id="submit" type="submit">Download</button></div></form>
 <div id="status" class="status" role="status" aria-live="polite"></div><div id="result" class="result"></div>
 </div>
 <div class="trust"><span>Free to Use</span><span>No Account Required</span><span>Mobile &amp; Desktop</span><span>Public Pins</span><span>Fast Processing</span></div>
@@ -45,10 +198,29 @@ footer{background:#17171a;color:#aaa;padding:48px 0 24px}.fg{display:grid;grid-t
 <div class="steps"><article class="step"><div class="stepnum">1</div><h3>Copy the Pinterest link</h3><p>Open Pinterest, find the Pin containing the video, choose Share, and copy its link.</p></article><article class="step"><div class="stepnum">2</div><h3>Paste the Pin URL</h3><p>Paste the Pinterest URL into the downloader. The tool uses the link to identify available public media.</p></article><article class="step"><div class="stepnum">3</div><h3>Download the media</h3><p>Review the available result, select the desired format or quality when provided, and save the file.</p></article></div></div></section>
 
 <section class="white"><div class="pvdc"><div class="kicker">Formats &amp; media</div><h2>Download Pinterest Videos as MP4</h2><p>Looking for a Pinterest to MP4 downloader? When an MP4 video source is available, this tool can present it as a downloadable option. MP4 is widely supported across phones, tablets, computers, media players, and editing applications.</p><p>Available resolution depends on the source media. If a Pin provides multiple versions, the result interface can display the available quality options. The tool should never claim a higher resolution than the source actually provides.</p>
-<div class="cards"><a class="card" href="/pinterest-video-to-mp4/"><div class="icon">MP4</div><h3>Pinterest Video to MP4</h3><p>Save supported Pinterest videos in MP4 format.</p></a><a class="card" href="/pinterest-image-downloader/"><div class="icon">IMG</div><h3>Pinterest Image Downloader</h3><p>Download supported Pinterest photos and images.</p></a><a class="card" href="/pinterest-gif-downloader/"><div class="icon">GIF</div><h3>Pinterest GIF Downloader</h3><p>Find supported animated media and GIF downloads.</p></a></div></div></section>
+<div class="cards">
+<article class="card"><div class="icon">HD</div><h3>High-Quality Pinterest Videos</h3><p>Choose the highest video quality actually available from the public Pin source, including HD and Full HD when provided.</p></article>
+<article class="card"><div class="icon">MP4</div><h3>Pinterest to MP4</h3><p>Download supported Pinterest videos as MP4 files that work across phones, tablets, computers, and common media players.</p></article>
+<article class="card"><div class="icon">FAST</div><h3>Simple Browser Download</h3><p>Paste a public Pinterest link, preview the available media, and choose a supported quality without installing an app.</p></article>
+</div></div></section>
 
 <section><div class="pvdc"><div class="kicker">More than video</div><h2>Download Pinterest Images and GIFs</h2><p>Pinterest Pins can contain more than video. Depending on the Pin, our media downloader can identify supported photos, images, GIFs, thumbnails, or other media. If your goal is specifically to save a Pinterest picture, use the dedicated image downloader for a focused experience.</p>
-<div class="cards"><article class="card"><div class="icon">01</div><h3>Pinterest Image Downloader</h3><p>Save supported Pinterest images and photos from public Pin URLs.</p></article><article class="card"><div class="icon">02</div><h3>Pinterest GIF Downloader</h3><p>Process public Pins containing supported animated GIF media.</p></article><article class="card"><div class="icon">03</div><h3>Pinterest Pin Downloader</h3><p>Paste a Pin URL and identify the media available from it.</p></article></div></div></section>
+<div class="cards">
+<article class="card"><div class="icon">01</div><h3>Public Pinterest Pins</h3><p>The downloader is designed for publicly accessible Pin URLs. Private, deleted, or restricted Pins may not be available.</p></article>
+<article class="card"><div class="icon">02</div><h3>Video, Image &amp; GIF Media</h3><p>Depending on the Pin, the tool can identify supported videos, images, GIFs, thumbnails, and other media exposed by the source.</p></article>
+<article class="card"><div class="icon">03</div><h3>Mobile-Friendly Downloader</h3><p>Use the responsive Pinterest downloader on iPhone, Android, iPad, Windows, Mac, Chromebook, and modern mobile browsers.</p></article>
+</div></div></section>
+
+<section><div class="pvdc">
+<div class="kicker">High-quality downloads</div>
+<h2>Download Pinterest Videos in HD, 720p &amp; 1080p</h2>
+<p class="intro">When Pinterest exposes multiple progressive video versions, the downloader can show the available quality options so you can choose the best source for your device.</p>
+<div class="cards">
+<article class="card"><div class="icon">1080</div><h3>1080p Full HD</h3><p>Choose 1080p when the original public Pin provides a Full HD video source.</p></article>
+<article class="card"><div class="icon">720</div><h3>720p HD</h3><p>Download a 720p HD version when that quality is available from the Pinterest source.</p></article>
+<article class="card"><div class="icon">BEST</div><h3>Best Available Quality</h3><p>The downloader can identify the highest-quality progressive MP4 source available instead of inventing unsupported resolutions.</p></article>
+</div>
+</div></section>
 
 <section class="white"><div class="pvdc"><div class="kicker">Any device</div><h2>Pinterest Video Downloader for iPhone, Android, PC &amp; Mac</h2><p class="intro">Because the downloader runs in a web browser, you can use it on many common devices without installing a dedicated Pinterest video downloader app.</p>
 <div class="devices"><div class="device"><strong>iPhone &amp; iPad</strong><span>Copy the Pin link from Pinterest and paste it into the downloader using Safari or another supported browser.</span></div><div class="device"><strong>Android</strong><span>Copy the public Pinterest URL and use Chrome or another modern Android browser.</span></div><div class="device"><strong>Windows PC</strong><span>Use Chrome, Edge, Firefox, or another supported browser to process the Pinterest link.</span></div><div class="device"><strong>Mac</strong><span>Open the downloader in Safari, Chrome, or another modern browser and paste the Pin URL.</span></div><div class="device"><strong>Chromebook</strong><span>Use the browser-based tool without installing a dedicated desktop application.</span></div><div class="device"><strong>Mobile browsers</strong><span>The responsive interface is designed for touch screens as well as desktop use.</span></div></div></div></section>
@@ -75,12 +247,12 @@ footer{background:#17171a;color:#aaa;padding:48px 0 24px}.fg{display:grid;grid-t
 <details><summary>Does the downloader store Pinterest videos?</summary><p>Describe your actual storage and processing policy in the site's Privacy Policy. The frontend sends the submitted URL to your configured backend only when the user requests processing.</p></details>
 </div></div></section>
 
-<section class="white"><div class="pvdc"><div class="kicker">Explore more</div><h2>Related Pinterest Tools</h2><div class="cards"><a class="card" href="/pinterest-image-downloader/"><h3>Pinterest Image Downloader</h3><p>Download supported Pinterest images and pictures.</p></a><a class="card" href="/pinterest-gif-downloader/"><h3>Pinterest GIF Downloader</h3><p>Find and save supported animated media.</p></a><a class="card" href="/pinterest-pin-downloader/"><h3>Pinterest Pin Downloader</h3><p>Process a Pinterest Pin URL and identify media.</p></a><a class="card" href="/pinterest-video-to-mp4/"><h3>Pinterest Video to MP4</h3><p>Learn about supported MP4 downloads.</p></a><a class="card" href="/pinterest-downloader-for-android/"><h3>Pinterest Downloader for Android</h3><p>Mobile-focused usage guidance.</p></a><a class="card" href="/pinterest-downloader-for-iphone/"><h3>Pinterest Downloader for iPhone</h3><p>iPhone and iPad usage guidance.</p></a></div></div></section>
+<section class="white"><div class="pvdc"><div class="kicker">Explore more</div><h2>Related Pinterest Tools</h2><div class="cards"><a class="card" href="/pinterest-image-downloader/"><h3 style="color:#E60023!important;">Pinterest Image Downloader</h3><p style="text-decoration:none!important;">Download supported Pinterest images and pictures.</p></a><a class="card" href="/pinterest-gif-downloader/"><h3 style="color:#E60023!important;">Pinterest GIF Downloader</h3><p style="text-decoration:none!important;">Find and save supported animated media.</p></a><a class="card" href="/pinterest-pin-downloader/"><h3 style="color:#E60023!important;">Pinterest Pin Downloader</h3><p style="text-decoration:none!important;">Process a Pinterest Pin URL and identify media.</p></a></div></div></section>
 
 <section><div class="pvdc"><div class="disc"><p><strong>Disclaimer:</strong> This website is an independent third-party tool and is not affiliated with, endorsed by, or sponsored by Pinterest. It is designed to help users process publicly accessible Pinterest URLs. Only download content that you have permission to use. Respect copyright, intellectual-property rights, privacy, and Pinterest's applicable policies. Users are responsible for how downloaded content is used.</p></div></div></section>
 </main>
 
-<footer><div class="pvdc"><div class="fg"><div><h3>Online Font Generate</h3><p>Free online tools for creators, social media users, and everyday web tasks.</p></div><div><h3>Pinterest Tools</h3><a href="/pinterest-video-downloader/">Pinterest Video Downloader</a><a href="/pinterest-image-downloader/">Pinterest Image Downloader</a><a href="/pinterest-gif-downloader/">Pinterest GIF Downloader</a><a href="/pinterest-pin-downloader/">Pinterest Pin Downloader</a></div><div><h3>Website</h3><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy-policy/">Privacy Policy</a><a href="/terms-and-conditions/">Terms &amp; Conditions</a><a href="/disclaimer/">Disclaimer</a></div></div><div class="copy">© 2026 Online Font Generate. All rights reserved.</div></div></footer>
+<footer><div class="pvdc"><div class="fg"><div><h3>Pinterest Video Downloader</h3><p>Download publicly accessible Pinterest videos, images, and GIFs online with a simple browser-based tool.</p></div><div><h3>Pinterest Tools</h3><a href="/pinterest-video-downloader/">Pinterest Video Downloader</a><a href="/pinterest-image-downloader/">Pinterest Image Downloader</a><a href="/pinterest-gif-downloader/">Pinterest GIF Downloader</a><a href="/pinterest-pin-downloader/">Pinterest Pin Downloader</a></div><div><h3>Website</h3><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy-policy/">Privacy Policy</a><a href="/terms-and-conditions/">Terms &amp; Conditions</a><a href="/disclaimer/">Disclaimer</a></div></div><div class="copy">© 2026 Online Font Generate. All rights reserved.</div></div></footer>
 
 <script>
 // Pinterest resolver backend.
@@ -97,7 +269,6 @@ function valid(v){
       /^pinterest\.[a-z.]+$/.test(h) || h.endsWith(".pinterest.co.uk");
   }catch(e){return false}
 }
-$("paste").onclick=async()=>{try{$("pvd-url").value=await navigator.clipboard.readText()}catch(e){msg("Please paste your Pinterest link into the box.","info")}}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function downloadUrl(u, quality){
   return API_BASE+"/api/download?url="+encodeURIComponent(u)+"&quality="+encodeURIComponent(quality||"best");
@@ -131,6 +302,10 @@ $("pvd-form").onsubmit=async e=>{
  e.preventDefault();const url=$("pvd-url").value.trim(),b=$("submit");$("result").classList.remove("show");
  if(!valid(url)){msg("Please enter a valid Pinterest URL, such as a Pinterest Pin link or pin.it link.","error");return}
  
+ if(API_BASE.includes("https://pinterest-resolver.onrender.com")){
+    msg("Please replace YOUR-RENDER-SERVICE with your actual Render service URL first.","error");
+    return;
+  }
   b.disabled=true;b.textContent="Processing...";msg("Processing the Pinterest link and checking available media...","info");
  try{
   const r=await fetch(API_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({url})});
@@ -170,3 +345,72 @@ $("pvd-form").onsubmit=async e=>{
 ]}
 </script>
 </div>
+
+
+
+
+<style>
+/* FINAL FIX: only the three Related Pinterest Tools descriptions are plain text */
+#pvd a.card[href="/pinterest-image-downloader/"],
+#pvd a.card[href="/pinterest-gif-downloader/"],
+#pvd a.card[href="/pinterest-pin-downloader/"] {
+  text-decoration: none !important;
+}
+
+#pvd a.card[href="/pinterest-image-downloader/"] h3,
+#pvd a.card[href="/pinterest-gif-downloader/"] h3,
+#pvd a.card[href="/pinterest-pin-downloader/"] h3 {
+  text-decoration: underline !important;
+  color: #E60023 !important;
+}
+
+#pvd a.card[href="/pinterest-image-downloader/"] p,
+#pvd a.card[href="/pinterest-gif-downloader/"] p,
+#pvd a.card[href="/pinterest-pin-downloader/"] p {
+  text-decoration: none !important;
+}
+
+#pvd a.card[href="/pinterest-image-downloader/"] p *,
+#pvd a.card[href="/pinterest-gif-downloader/"] p *,
+#pvd a.card[href="/pinterest-pin-downloader/"] p * {
+  text-decoration: none !important;
+}
+</style>
+
+
+<script>
+(function(){
+  const toggle=document.getElementById("pvd-mobile-toggle");
+  const menu=document.getElementById("pvd-mobile-menu");
+  if(!toggle||!menu)return;
+
+  toggle.addEventListener("click",function(){
+    const open=!menu.classList.contains("is-open");
+    menu.classList.toggle("is-open",open);
+    toggle.classList.toggle("is-open",open);
+    toggle.setAttribute("aria-expanded",open?"true":"false");
+    toggle.setAttribute("aria-label",open?"Close menu":"Open menu");
+    menu.setAttribute("aria-hidden",open?"false":"true");
+  });
+
+  menu.querySelectorAll("a").forEach(function(link){
+    link.addEventListener("click",function(){
+      menu.classList.remove("is-open");
+      toggle.classList.remove("is-open");
+      toggle.setAttribute("aria-expanded","false");
+      toggle.setAttribute("aria-label","Open menu");
+      menu.setAttribute("aria-hidden","true");
+    });
+  });
+
+  window.addEventListener("resize",function(){
+    if(window.innerWidth>760){
+      menu.classList.remove("is-open");
+      toggle.classList.remove("is-open");
+      toggle.setAttribute("aria-expanded","false");
+      toggle.setAttribute("aria-label","Open menu");
+      menu.setAttribute("aria-hidden","true");
+    }
+  });
+})();
+</script>
