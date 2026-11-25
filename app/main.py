@@ -24,15 +24,17 @@ from playwright.async_api import async_playwright
 # ============================================================
 
 APP_NAME = "Pinterest Media Resolver"
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 
-SHORT_URL_TIMEOUT = 10
-DIRECT_TIMEOUT = 12
+SHORT_URL_TIMEOUT = 8
+DIRECT_TIMEOUT = 7
+HTTP_CONNECT_TIMEOUT = 4
 
-BROWSER_NAV_TIMEOUT = 22000
-BROWSER_SETTLE_TIME = 1200
+BROWSER_NAV_TIMEOUT = 18000
+BROWSER_SETTLE_TIME = 650
+BROWSER_EXTRA_WAIT = 500
 
-TOTAL_RESOLVE_TIMEOUT = 48
+TOTAL_RESOLVE_TIMEOUT = 38
 
 MAX_CONCURRENT_RESOLVES = int(
     os.getenv("MAX_CONCURRENT_RESOLVES", "3")
@@ -100,6 +102,8 @@ browser_lock = asyncio.Lock()
 
 playwright_instance = None
 shared_browser = None
+shared_http_client = None
+browser_startup_error = None
 
 
 # ============================================================
@@ -552,7 +556,7 @@ async def resolve_short_url(
         follow_redirects=True,
         timeout=httpx.Timeout(
             SHORT_URL_TIMEOUT,
-            connect=5
+            connect=HTTP_CONNECT_TIMEOUT
         ),
         headers={
             "User-Agent": UA,
@@ -579,35 +583,42 @@ async def get_browser():
 
     global playwright_instance
     global shared_browser
+    global browser_startup_error
 
     async with browser_lock:
-
-        if (
-            shared_browser is not None
-            and shared_browser.is_connected()
-        ):
+        if shared_browser is not None and shared_browser.is_connected():
             return shared_browser
 
-        if playwright_instance is None:
+        try:
+            if playwright_instance is None:
+                playwright_instance = await async_playwright().start()
 
-            playwright_instance = (
-                await async_playwright().start()
-            )
-
-        shared_browser = (
-            await playwright_instance.chromium.launch(
+            shared_browser = await playwright_instance.chromium.launch(
                 headless=True,
                 args=[
                     "--no-sandbox",
                     "--disable-dev-shm-usage",
                     "--disable-blink-features=AutomationControlled",
-                ]
+                    "--disable-background-networking",
+                    "--disable-renderer-backgrounding",
+                    "--disable-background-timer-throttling",
+                ],
             )
-        )
+            browser_startup_error = None
+            print("[BROWSER] Chromium launched and ready")
+            return shared_browser
 
-        print("[BROWSER] Chromium launched")
-
-        return shared_browser
+        except Exception as exc:
+            browser_startup_error = str(exc)
+            print("[BROWSER] Chromium startup failed:", browser_startup_error)
+            if playwright_instance is not None:
+                try:
+                    await playwright_instance.stop()
+                except Exception:
+                    pass
+                playwright_instance = None
+            shared_browser = None
+            raise
 
 
 async def close_browser():
@@ -616,25 +627,18 @@ async def close_browser():
     global shared_browser
 
     async with browser_lock:
-
         if shared_browser is not None:
-
             try:
                 await shared_browser.close()
-
             except Exception:
                 pass
-
             shared_browser = None
 
         if playwright_instance is not None:
-
             try:
                 await playwright_instance.stop()
-
             except Exception:
                 pass
-
             playwright_instance = None
 
     print("[BROWSER] Chromium closed")
@@ -647,101 +651,66 @@ async def close_browser():
 async def browser_extract(url: str) -> tuple:
 
     async with browser_semaphore:
-
         browser = await get_browser()
-
         context = await browser.new_context(
             user_agent=UA,
             locale="en-US",
-            viewport={
-                "width": 1365,
-                "height": 850
-            },
+            viewport={"width": 1280, "height": 800},
             extra_http_headers={
-                "Accept-Language": "en-US,en;q=0.9"
-            }
+                "Accept-Language": "en-US,en;q=0.9",
+                "Referer": "https://www.pinterest.com/",
+            },
         )
-
         page = await context.new_page()
-
         network_urls = []
 
         async def intercept(route):
-
-            request_url = route.request.url
+            request = route.request
+            request_url = request.url
+            resource_type = request.resource_type
 
             if "pinimg.com/videos/" in request_url:
-
                 network_urls.append(request_url)
-
-                # We need the URL, not the actual video bytes.
                 await route.abort()
+                return
 
-            else:
+            if resource_type in {"image", "font", "media"}:
+                await route.abort()
+                return
 
-                await route.continue_()
+            await route.continue_()
 
         try:
-
             await page.route("**/*", intercept)
-
             await page.goto(
                 url,
                 wait_until="domcontentloaded",
-                timeout=BROWSER_NAV_TIMEOUT
+                timeout=BROWSER_NAV_TIMEOUT,
             )
-
-            await page.wait_for_timeout(
-                BROWSER_SETTLE_TIME
-            )
-
+            await page.wait_for_timeout(BROWSER_SETTLE_TIME)
             html = await page.content()
             final_url = page.url
 
-            # Additional short wait only if media is not found.
-
-            if (
-                "pinimg.com/videos/" not in html
-                and not network_urls
-            ):
-
-                await page.wait_for_timeout(800)
-
+            if "pinimg.com/videos/" not in html and not network_urls:
+                await page.wait_for_timeout(BROWSER_EXTRA_WAIT)
                 html = await page.content()
                 final_url = page.url
 
-            # Extract visible video sources.
-
             try:
-
                 dom_urls = await page.evaluate(
                     """
-                    () => Array.from(
-                        document.querySelectorAll('video,source')
-                    )
-                    .map(x =>
-                        x.currentSrc ||
-                        x.src ||
-                        x.getAttribute('data-src')
-                    )
-                    .filter(Boolean)
+                    () => Array.from(document.querySelectorAll('video,source'))
+                      .map(x => x.currentSrc || x.src || x.getAttribute('data-src'))
+                      .filter(Boolean)
                     """
                 )
-
                 network_urls.extend(dom_urls or [])
-
             except Exception:
                 pass
 
-            media = extract_media(
-                html,
-                network_urls
-            )
-
-            return final_url, media
+            return final_url, extract_media(html, network_urls)
 
         finally:
-
             await context.close()
 
 
@@ -749,14 +718,11 @@ async def browser_extract(url: str) -> tuple:
 # DIRECT HTTP EXTRACTION
 # ============================================================
 
-async def http_extract(url: str) -> tuple:
+async def http_extract(url: str, client: httpx.AsyncClient) -> tuple:
 
     headers = {
         "User-Agent": UA,
-        "Accept": (
-            "text/html,application/xhtml+xml,"
-            "application/xml;q=0.9,*/*;q=0.8"
-        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9",
         "Referer": "https://www.pinterest.com/",
         "Sec-Fetch-Dest": "document",
@@ -765,34 +731,19 @@ async def http_extract(url: str) -> tuple:
         "Upgrade-Insecure-Requests": "1",
     }
 
-    timeout = httpx.Timeout(
-        DIRECT_TIMEOUT,
-        connect=5
-    )
-
-    async with httpx.AsyncClient(
+    response = await client.get(
+        url,
+        headers=headers,
+        timeout=httpx.Timeout(DIRECT_TIMEOUT, connect=HTTP_CONNECT_TIMEOUT),
         follow_redirects=True,
-        timeout=timeout,
-        headers=headers
-    ) as client:
+    )
+    response.raise_for_status()
+    final_url = str(response.url)
 
-        response = await client.get(url)
+    if not is_allowed_pinterest_url(final_url):
+        raise ValueError("Pinterest redirect validation failed.")
 
-        response.raise_for_status()
-
-        final_url = str(response.url)
-
-        if not is_allowed_pinterest_url(final_url):
-            raise ValueError(
-                "Pinterest redirect validation failed."
-            )
-
-        media = extract_media(
-            response.text,
-            []
-        )
-
-        return final_url, media
+    return final_url, extract_media(response.text, [])
 
 
 # ============================================================
@@ -885,16 +836,10 @@ async def resolve(url: str) -> dict:
 
         stage_start = time.perf_counter()
 
-        async with httpx.AsyncClient(
-            follow_redirects=True,
-            timeout=SHORT_URL_TIMEOUT,
-            headers={"User-Agent": UA}
-        ) as client:
+        if shared_http_client is None:
+            raise RuntimeError("HTTP client is not initialized.")
 
-            canonical = await resolve_short_url(
-                client,
-                url
-            )
+        canonical = await resolve_short_url(shared_http_client, url)
 
         print(
             "[TIMING] short_url:",
@@ -908,7 +853,10 @@ async def resolve(url: str) -> dict:
 
     try:
 
-        final_url, media = await http_extract(canonical)
+        if shared_http_client is None:
+            raise RuntimeError("HTTP client is not initialized.")
+
+        final_url, media = await http_extract(canonical, shared_http_client)
 
         print(
             "[TIMING] direct_http:",
@@ -1026,25 +974,41 @@ def rate_limit(request: Request):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    print(
-        f"[STARTUP] {APP_NAME} v{VERSION}"
+    global shared_http_client
+    global browser_startup_error
+
+    print(f"[STARTUP] {APP_NAME} v{VERSION}")
+    print("[CONFIG] Resolve concurrency:", MAX_CONCURRENT_RESOLVES)
+    print("[CONFIG] Browser concurrency:", MAX_CONCURRENT_BROWSERS)
+
+    shared_http_client = httpx.AsyncClient(
+        follow_redirects=True,
+        timeout=httpx.Timeout(DIRECT_TIMEOUT, connect=HTTP_CONNECT_TIMEOUT),
+        limits=httpx.Limits(
+            max_connections=30,
+            max_keepalive_connections=15,
+            keepalive_expiry=30,
+        ),
+        headers={"User-Agent": UA},
     )
+    app.state.http = shared_http_client
 
-    print(
-        "[CONFIG] Resolve concurrency:",
-        MAX_CONCURRENT_RESOLVES
-    )
+    # Eager startup makes Chromium status visible in /health immediately.
+    try:
+        await get_browser()
+    except Exception as exc:
+        browser_startup_error = str(exc)
+        print("[STARTUP] Chromium unavailable; HTTP extraction remains enabled.")
 
-    print(
-        "[CONFIG] Browser concurrency:",
-        MAX_CONCURRENT_BROWSERS
-    )
-
-    yield
-
-    await close_browser()
-
-    print("[SHUTDOWN] Application stopped")
+    try:
+        yield
+    finally:
+        await close_browser()
+        if shared_http_client is not None:
+            await shared_http_client.aclose()
+            shared_http_client = None
+        app.state.http = None
+        print("[SHUTDOWN] Application stopped")
 
 
 # ============================================================
@@ -1109,9 +1073,20 @@ async def root():
 @app.get("/health")
 async def health():
 
+    chromium_ready = (
+        shared_browser is not None
+        and shared_browser.is_connected()
+    )
+
     return {
         "status": "ok",
-        "version": VERSION
+        "version": VERSION,
+        "chromium": chromium_ready,
+        "browser_error": (
+            browser_startup_error
+            if not chromium_ready and browser_startup_error
+            else None
+        ),
     }
 
 
@@ -1223,40 +1198,36 @@ async def api_download(
     if request.headers.get("range"):
         headers["Range"] = request.headers["range"]
 
-    client = httpx.AsyncClient(
-        follow_redirects=True,
-        timeout=httpx.Timeout(
-            60,
-            connect=10
-        )
-    )
+    client = getattr(request.app.state, "http", None)
+    if client is None:
+        raise HTTPException(503, "Download service is starting. Please retry.")
 
     try:
-
         upstream = await client.send(
             client.build_request(
                 "GET",
                 url,
-                headers=headers
+                headers=headers,
+                timeout=httpx.Timeout(60, connect=10),
             ),
-            stream=True
+            stream=True,
         )
-
-    except Exception:
-
-        await client.aclose()
-
+        if not is_allowed_media_url(str(upstream.url)):
+            await upstream.aclose()
+            raise HTTPException(400, "Media redirect was not an allowed Pinterest CDN host.")
+    except HTTPException:
+        raise
+    except Exception as exc:
         raise HTTPException(
             502,
             "Could not retrieve media from Pinterest CDN."
-        )
+        ) from exc
 
     if upstream.status_code >= 400:
 
         status = upstream.status_code
 
         await upstream.aclose()
-        await client.aclose()
 
         raise HTTPException(
             status,
@@ -1275,7 +1246,6 @@ async def api_download(
         finally:
 
             await upstream.aclose()
-            await client.aclose()
 
     content_type = upstream.headers.get(
         "content-type",
